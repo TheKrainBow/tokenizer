@@ -1,57 +1,71 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
+# Code
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+Hardhat project for the 42 token exercise.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+Contracts:
 
-## Project Overview
+- `contracts/Mokko42.sol`: ERC-20-style token `MokkoAt42Nice` (`M42`)
+- `contracts/MultisigWallet.sol`: 2-of-3 multisig for the bonus
 
-This example project includes:
+## Setup
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+Create `code/.env`:
 
-## Usage
-
-### Running Tests
-
-To run all the tests in the project, execute the following command:
-
-```shell
-npx hardhat test
+```env
+SEPOLIA_RPC=https://ethereum-sepolia-rpc.publicnode.com
+PRIVATE_KEY=...
+PRIVATE_KEY2=...
+PRIVATE_KEY3=...
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+`PRIVATE_KEY` deploys the token. `PRIVATE_KEY2` and `PRIVATE_KEY3` are used to prove the multisig approvals.
 
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
+## Mandatory Commands
+
+```sh
+rm -f deployments/sepolia.json deployments/sepolia_bonus.json
+make sepolia-deploy
+make sepolia-mint
+make sepolia-transfer
+make sepolia-balance
 ```
 
-### Make a deployment to Sepolia
+`make sepolia-mint` proves the deployer can mint directly before ownership is moved to the multisig.
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+Delete the deployment JSON files before a fresh correction run. Otherwise the scripts reuse existing Sepolia addresses instead of starting from a new local deployment state.
 
-To run the deployment to a local chain:
+## Bonus Demo
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+```sh
+make sepolia-fund
+make sepolia-bonus-setup
+make sepolia-bonus-mint
+make sepolia-bonus-accept-1
+make sepolia-bonus-execute
+make sepolia-bonus-accept-2
+make sepolia-bonus-execute
+make sepolia-bonus-status
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+The first `execute` should fail because only one owner accepted. After the second accept, `execute` succeeds and mints through the multisig.
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+## Deployment Files
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+- `deployments/sepolia.json`: mandatory token address
+- `deployments/sepolia_bonus.json`: bonus multisig and pending transaction state
 
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+Delete both JSON files before a fresh correction run if you want new Sepolia contract addresses. If they exist, the scripts use the saved addresses.
+
+## Optional Etherscan Verification
+
+Add `ETHERSCAN_API_KEY` to `.env`, then run:
+
+```sh
+make sepolia-verify
+make sepolia-bonus-verify
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+The current documented contracts are already verified:
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+- Token: https://sepolia.etherscan.io/address/0xcEcc251E5204Cd169A424770DeA7A3D2E0Def6f5#code
+- Multisig: https://sepolia.etherscan.io/address/0xc6392277fEA21B08BDe641ad30832040e70170aC#code

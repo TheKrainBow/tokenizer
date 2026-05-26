@@ -23,3 +23,5 @@ ignition/
 *.swp
 *.swo
 *.tmp
+
+deployments/*.json

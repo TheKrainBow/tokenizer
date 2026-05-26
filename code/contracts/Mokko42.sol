@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /// @title MokkoAt42Nice - Minimal ERC-20 implementation (no OpenZeppelin)
-/// @notice Fixed supply minted to deployer at construction.
+/// @notice Supply minted to deployer at construction.
 contract MokkoAt42Nice {
     // --- ERC-20 metadata ---
     string public name;
